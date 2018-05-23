@@ -1,6 +1,16 @@
 #! /usr/bin/perl
 
 use List::Util qw[min max];
+use File::Basename;
+
+sub check_parameter {
+	if (@ARGV != 1) {
+		$cmd_name = basename($0);
+		print ("usage: $cmd_name docker_image\n");
+		exit;
+	}
+}
+check_parameter();
 
 sub get_cpu_period_quota {
 	my $cpu_share = $_[0];
@@ -30,7 +40,7 @@ sub get_cpu_period_quota {
 	return @cpu_period_quota;
 }
 
-$max_memory = 32;
+$max_memory = 30;
 $current_memory = 0;
 $max_cpu_core = 4;
 %cpucore_used=(0, 0, 1, 0, 2, 0, 3, 0);
@@ -54,7 +64,7 @@ sub get_cpusets {
 	while ($i < $cpu_core) {# cpu_core is the needed cpu number
 		$j = 0;
 		for (; $j < $max_cpu_core; $j++) {
-			if ($cpucore_used{$j} + $each_cpu_core_share <= 1 && !($j ~~ @cpusets)) {
+			if ($cpucore_used{$j} + $each_cpu_core_share <= 0.8 && !($j ~~ @cpusets)) {
 				$cpucore_used{$j} = $cpucore_used{$j} + $each_cpu_core_share; 
 				push(@cpusets, $j);
 				last;
@@ -78,7 +88,7 @@ sub reset_resource {
 	%cpucore_used=(0, 0, 1, 0, 2, 0, 3, 0);
 }
 
-$image_name=$_[0];
+$image_name=$ARGV[0];
 
 open (f, "< hardware_configure2.txt") or die "Open hardware_configure2.txt fail, $!";
 readline f; #skip the frist line
@@ -98,16 +108,20 @@ while ($line=<f>) {
 	if ($array_len == 0) {
 		print("reach the maximum containers allocation, line_index=$index, cpu_core:$cpu_core cpu_share:$cpu_share memory:$memory\n");
 		#the cluster has been finished, run applications one by one
-
+		`sleep 5`
 		#after running, destroy the cluster and reset the resource
 		reset_resource();
 		$container_index = 1;
+		# TODO: stop all slaves
+		#`sleep 600`
+		exit;
 	} else {
-		print("container=$container_index,line_index=$index:cpusets= @cpusets cpu_core:$cpu_core cpu_share:$cpu_share memory:$memory\n");
+		print("container=$container_index,line_index=$index:cpusets= @cpusets cpu_core:$cpu_core \
+				cpu_share:$cpu_share memory:$memory cpu_period:$cpu_period_quota[0] cpu_quota:$cpu_period_quota[1]\n");
 		$str_cpusets = join(',', @cpusets);
 		print ("str_cpusets:$str_cpusets\n");
-		#print join(',', @cpusets);
 		#create a new container
+		`/home/lyuxiaosu/add_node_from_master.sh $image_name $container_index $container_index $str_cpusets $cpu_period_quota[0] $cpu_period_quota[1] $memory $disk_speed`;
 		$index++;
 		$container_index++;
 	}

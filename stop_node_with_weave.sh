@@ -3,7 +3,7 @@
 
 print_help() {
   cat <<EOF
-  use $0 master/slave add_node_begin_index add_node_end_index 
+  use $0 master/slave stop_node_begin_index stop_node_end_index 
 EOF
 }
 

@@ -23,12 +23,6 @@ disk_speed=$8
 
 /home/lyuxiaosu/add_node_with_weave.sh master $image $begin $end
 
-#ssh lyuxiaosu@161.253.78.191 > /dev/null 2>&1 << eeooff
-
-#/home/lyuxiaosu/add_node_with_weave.sh slave $begin $end
-
-#eeooff
-
 
 ssh lyuxiaosu@161.253.78.191 "/home/lyuxiaosu/add_node_with_weave.sh slave $image $begin $end $cpuset $cpu_period $cpu_quota $memory $disk_speed"
 
