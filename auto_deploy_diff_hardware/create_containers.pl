@@ -108,8 +108,8 @@ while ($line=<f>) {
 	if ($array_len == 0) {
 		print("reach the maximum containers allocation, line_index=$index, cpu_core:$cpu_core cpu_share:$cpu_share memory:$memory\n");
 		#the cluster has been finished, run applications one by one
-		`sleep 5`;
 		#after running, destroy the cluster and reset the resource
+		exit;
 		reset_resource();
 		$container_index = 1;
 		# TODO: stop all slaves

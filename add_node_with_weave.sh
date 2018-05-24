@@ -32,7 +32,7 @@ if [ $server_type = "slave" ]; then
 	for ((i = 1; i < $begin; i++))
 	do
         	container="$prefix$i"
-        	docker exec -d $container /root/add_node_with_weave.sh $begin $end
+        	docker exec -d $container /root/add_node_with_weave.sh $begin $end 0
 	done
 
 	for ((i = $begin; i <= $end; i++))
@@ -44,11 +44,11 @@ if [ $server_type = "slave" ]; then
 			docker run -d --name $container -h $container --cpuset-cpus=$cpuset -m $memory_size \
 										    --device-read-bps /dev/mapper/ECEVM01--vg-root:$disk_speed_value \
 										    --device-write-bps /dev/mapper/ECEVM01--vg-root:$disk_speed_value \
-										    $image /root/add_node_with_weave.sh $begin $end
+										    $image /root/add_node_with_weave.sh $begin $end $memory_size
 		else	
         		docker run -d --name $container -h $container --cpuset-cpus=$cpuset --cpu-period=$cpu_period --cpu-quota=$cpu_quota \
 -m $memory_size --device-read-bps /dev/mapper/ECEVM01--vg-root:$disk_speed_value \
-	--device-write-bps /dev/mapper/ECEVM01--vg-root:$disk_speed_value $image /root/add_node_with_weave.sh $begin $end
+	--device-write-bps /dev/mapper/ECEVM01--vg-root:$disk_speed_value $image /root/add_node_with_weave.sh $begin $end $memory_size
 		fi
 		#add ip with weave
 		tm=$[i + 2]
@@ -58,7 +58,7 @@ if [ $server_type = "slave" ]; then
 	done
 
 elif [ $server_type = "master" ]; then
-	docker exec -d master /root/add_node_with_weave.sh $begin $end
+	docker exec -d master /root/add_node_with_weave.sh $begin $end 0
 fi
 
 
