@@ -45,6 +45,7 @@ if [[ ($last_letter -ge $begin && $last_letter -le $end) ]]; then
 		echo $host_str >> /etc/hosts
 		host="$prefix_host$i"
 		echo $host >> /root/hadoop-2.7.6/etc/hadoop/slaves
+		/root/generate_xml.sh $memory
 	done
 fi
 
@@ -60,7 +61,6 @@ if [[ ($last_letter -lt $begin) || "$last_letter" = "r" ]]; then
 	done
 fi
 
-/root/generate_xml.sh $memory
 
 /etc/init.d/ssh start -D 
 
