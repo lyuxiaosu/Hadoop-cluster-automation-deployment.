@@ -32,7 +32,7 @@ if [ $server_type = "slave" ]; then
 	for ((i = 1; i < $begin; i++))
 	do
         	container="$prefix$i"
-        	docker exec -d $container /root/add_node_with_weave.sh $begin $end $memory 
+        	docker exec -d $container /root/add_node_with_weave.sh $begin $end 0 
 	done
 
 	for ((i = $begin; i <= $end; i++))
@@ -58,7 +58,6 @@ if [ $server_type = "slave" ]; then
 	done
 
 elif [ $server_type = "master" ]; then
-	docker exec -d master /root/add_node_with_weave.sh $begin $end $memory
+	docker exec -d master /root/add_node_with_weave.sh $begin $end 0 
 fi
-
 

@@ -21,7 +21,7 @@ cpu_quota=$6
 memory=$7
 disk_speed=$8
 
-/home/lyuxiaosu/add_node_with_weave.sh master $image $begin $end
+/home/lyuxiaosu/add_node_with_weave.sh master $image $begin $end > add_node_with_weave.log
 
 
 ssh lyuxiaosu@161.253.78.191 "/home/lyuxiaosu/add_node_with_weave.sh slave $image $begin $end $cpuset $cpu_period $cpu_quota $memory $disk_speed"
