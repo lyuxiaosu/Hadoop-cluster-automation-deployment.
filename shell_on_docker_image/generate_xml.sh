@@ -1,6 +1,17 @@
 #!/bin/bash
 
-#this script is called by add_node_with_weave.sh 
+#this script is called by add_node_with_weave.sh
+print_help() {
+  cat <<EOF
+  use $0 container_memory
+EOF
+}
+
+if [ $# != 1 ]; then
+print_help
+exit
+fi
+ 
 memory=$1
 unit="m"
 #if [ $physic_memory -eq 2 ]; then
