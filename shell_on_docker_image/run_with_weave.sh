@@ -32,6 +32,10 @@ do
         fi
 
 done
+
+/root/generate_default_conf.sh
+
+#set default yarn-site and mapred-site 
 /etc/init.d/ssh start -D
 
 
