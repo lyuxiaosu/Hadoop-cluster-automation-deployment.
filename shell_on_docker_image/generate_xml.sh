@@ -100,6 +100,16 @@ cat > /root/hadoop-2.7.6/etc/hadoop/yarn-site.xml << EOF
                 <name>yarn.scheduler.minimum-allocation-mb</name>
                 <value>$NM_scheduler_minimum</value>
         </property>
+	<property>
+   		<name>yarn.nodemanager.vmem-check-enabled</name>
+    		<value>false</value>
+    		<description>Whether virtual memory limits will be enforced for containers</description>
+  	</property>
+ 	<property>
+   		<name>yarn.nodemanager.vmem-pmem-ratio</name>
+    		<value>4</value>
+    		<description>Ratio between virtual memory to physical memory when setting memory limits for containers</description>
+  	</property>	
 	
 </configuration>
 
