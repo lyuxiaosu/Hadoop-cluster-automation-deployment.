@@ -36,9 +36,10 @@ copy_logs() {
 	application_name=$3
 	for ((i = 1; i <= $slave_count; i++))
 do
-        name=$cluster_name"_slave"$i"_"$application_name.tar.gz
-	echo "$name"
-	ssh lyuxiaosu@161.253.78.191 "/home/lyuxiaosu/auto_deploy_diff_hardware/collect_logs.sh $container_name $name"
+	tar_name=$cluster_name"_slave"$i"_"$application_name.tar.gz
+        echo "$tar_name"
+        container_name="slave"$i
+	ssh lyuxiaosu@161.253.78.191 "/home/lyuxiaosu/auto_deploy_diff_hardware/collect_logs.sh $container_name $tar_name"
 	
 done
 	echo "copy logs done"
@@ -55,9 +56,9 @@ echo "$output"
 echo "wordcount finish"
 application_name="wordcount"
 output=`copy_logs $cluster_name $slave_count $application_name`
-echo "$output"
+echo $output
 output=`clean_logs $slave_count`
-echo "$output"
+echo $output
 
 #calculate pi
 echo "run pi..."
@@ -66,9 +67,9 @@ echo "$output"
 echo "pi finish"
 application_name="pi"
 output=`copy_logs $cluster_name $slave_count $application_name`
-echo "$output"
+echo $output
 output=`clean_logs $slave_count`
-echo "$output"
+echo $output
 
 #bbq
 echo "run bbq"
@@ -77,9 +78,9 @@ echo "$output"
 echo "bbq finish"
 application_name="bbq"
 output=`copy_logs $cluster_name $slave_count $application_name`
-echo "$output"
+echo $output
 output=`clean_logs $slave_count`
-echo "$output"
+echo $output
 
 #wordmean
 echo "run wordmean" 
@@ -88,9 +89,9 @@ echo "$output"
 echo "wordmean finish"
 application_name="wordmean"
 output=`copy_logs $cluster_name $slave_count $application_name`
-echo "$output"
+echo $output
 output=`clean_logs $slave_count`
-echo "$output"
+echo $output
 
 #wordmedian
 echo "run wordmedian"
@@ -99,10 +100,9 @@ echo "$output"
 echo "wordmedian finish"
 application_name="wordmedian"
 output=`copy_logs $cluster_name $slave_count $application_name`
-echo "$output"
+echo $output
 output=`clean_logs $slave_count`
-echo "$output"
-
+echo $output
 
 #wordstandarddeviation
 echo "run wordstandarddeviation"
@@ -111,8 +111,6 @@ echo "$output"
 echo "wordstandarddeviation finish"
 application_name="wordstandarddeviation"
 output=`copy_logs $cluster_name $slave_count $application_name`
-echo "$output"
+echo $output
 output=`clean_logs $slave_count`
-echo "$output"
-
-
+echo $output
