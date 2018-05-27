@@ -13,4 +13,4 @@ fi
 
 container_name=$1
 
-docker exec -it $container_name sh -c 'rm -rf /root/hadoop-2.7.6/logs/userlogs/*'
+docker exec -i $container_name sh -c 'rm -rf /root/hadoop-2.7.6/logs/userlogs/*'
