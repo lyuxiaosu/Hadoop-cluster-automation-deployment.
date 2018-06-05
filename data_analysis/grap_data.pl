@@ -68,7 +68,7 @@ sub do_grap_data {
 }
 
 sub grap_data {
-	@data = (0, 0, 0, 0, 0);
+	@data = (0, 0, 0, 0, 0, 0);
 	$untar_folder_name = $_[0];
 	@folder = `find $untar_folder_name -type d`;
 	$len = @folder;
@@ -102,18 +102,22 @@ sub grap_data {
 			$data[2] = int($data[2]/$valid_container_count);
 			$data[3] = int($data[3]/$valid_container_count);
 			$data[4] = int($data[4]/$valid_container_count);
+			$data[5] = $container_count;
+			return @data;
+		} else {
+			return ();
 		}
 	}
-	return @data;
+	return ();
 }
 
 open (fr, "< applications.txt") or die "Open applications.txt fail, $!";
-open (fw, "> collected_data.txt") or die "Open collected_data.txt fail, $!";
-print fw "application\tcluster_slave\tread_bytes\twrite_bytes\tinput_records\toutput_records\tcpu_time_spent\n";
+open (fw, "> collected_log_data.txt") or die "Open collected_log_data.txt fail, $!";
+print fw "application\tcluster_slave\tcontainer_count\tread_bytes\twrite_bytes\tinput_records\toutput_records\tcpu_time_spent\n";
 
 $log_folder = "/home/lyuxiaosu/data_analysis/logs/";
 my %hash_data = ();
-my $max_index = 10;
+my $max_index = 100000000;
 while ($line=<fr>) {
 	print ($line);
 	my $application = $line;
@@ -129,7 +133,7 @@ while ($line=<fr>) {
 				@array = grap_data($untar_folder_name);
 				`rm -rf $untar_folder_name`;
 				if (@array) {
-					print fw "$application\t$cluster_slave\t$array[0]\t$array[1]\t$array[2]\t$array[3]\t$array[4]\n";
+					print fw "$application\t$cluster_slave\t$array[5]\t$array[0]\t$array[1]\t$array[2]\t$array[3]\t$array[4]\n";
 				}
 			} else {
 				last;	
@@ -145,3 +149,4 @@ while ($line=<fr>) {
 }
 
 close fr;
+close fw;
