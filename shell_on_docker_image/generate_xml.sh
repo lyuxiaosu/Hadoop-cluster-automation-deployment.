@@ -31,7 +31,7 @@ NM_scheduler_minimum=32
 if [ $memory -eq 2 ]; then
 	AM_map_memory=768 
 	AM_reduce_memory=1024
-elif [ $physic_memory -gt 2 ]; then
+elif [ $memory -gt 2 ]; then
 	AM_map_memory=1024
 	AM_reduce_memory=$((2*$AM_map_memory))
 fi
