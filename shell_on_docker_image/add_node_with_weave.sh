@@ -2,11 +2,11 @@
 
 print_help() {
   cat <<EOF
-  use $0 add_node_begin_index add_node_end_index container_memory 
+  use $0 add_node_begin_index add_node_end_index container_memory container_cpu_core
 EOF
 }
 
-if [ $# != 3 ]; then
+if [ $# != 4 ]; then
 print_help
 exit
 fi
@@ -14,6 +14,7 @@ fi
 begin=$1 #the begin index of the slaves
 end=$2 # the end index of the slaves
 memory=$3 # the memory size allocated for this container
+cpu_core=$4 # the cpu core allocated for this container
 ip="192.168.0."
 suffix=" slave"
 prefix_host="slave"
@@ -33,7 +34,7 @@ do
 done
 last_letter=${HOSTNAME:0-1:1}
 
-if [[ ($last_letter -ge $begin && $last_letter -le $end) ]]; then
+if [[ ("$last_letter" != "r" && $last_letter -ge $begin && $last_letter -le $end) ]]; then
 	#This device is the new node to be added
 	echo "192.168.0.2 master" > /etc/hosts
 	> /root/hadoop-2.7.6/etc/hadoop/slaves
@@ -45,7 +46,7 @@ if [[ ($last_letter -ge $begin && $last_letter -le $end) ]]; then
 		echo $host_str >> /etc/hosts
 		host="$prefix_host$i"
 		echo $host >> /root/hadoop-2.7.6/etc/hadoop/slaves
-		/root/generate_xml.sh $memory
+		/root/generate_xml.sh $memory $cpu_core
 	done
 fi
 

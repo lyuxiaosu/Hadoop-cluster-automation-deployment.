@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# sync all files from another machine 
+# sync all files to another machine 
 path=$1
 files=$(ls $path)
 for filename in $files

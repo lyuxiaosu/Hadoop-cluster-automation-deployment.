@@ -1,9 +1,23 @@
 #!/bin/bash
+
+print_help() {
+  cat <<EOF
+  use $0 memory cpu_core begin_index end_index
+EOF
+}
+
+if [ $# != 4 ]; then
+print_help
+exit
+fi
+
 echo "192.168.0.2 master" > /etc/hosts
 > /root/hadoop-2.7.6/etc/hadoop/slaves
 
-begin=$1 #the begin index of the slaves
-end=$2 # the end index of the slaves
+memory=$1
+cpu_core=$2
+begin=$3 #the begin index of the slaves
+end=$4 # the end index of the slaves
 ip="192.168.0."
 suffix=" slave"
 prefix_host="slave"
@@ -33,7 +47,7 @@ do
 
 done
 
-/root/generate_default_conf.sh
+/root/generate_default_conf.sh $memory $cpu_core
 
 #set default yarn-site and mapred-site 
 /etc/init.d/ssh start -D

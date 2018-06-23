@@ -3,11 +3,11 @@
 
 print_help() {
   cat <<EOF
-  use $0 master/slave docker_image add_node_begin_index add_node_end_index cpuset cpu_period cpu_quota memory disk_speed 
+  use $0 master/slave docker_image add_node_begin_index add_node_end_index cpuset cpu_period cpu_quota memory disk_speed cpu_core 
 EOF
 }
 
-if [ $# != 9 -a $# != 4 ]; then 
+if [ $# != 10 -a $# != 4 ]; then 
 print_help
 exit
 fi
@@ -25,6 +25,7 @@ cpu_period=$6
 cpu_quota=$7
 memory=$8
 disk_speed=$9
+cpu_core=${10}
 memory_unit="G"
 disk_speed_unit="mb"
 
@@ -32,7 +33,9 @@ if [ $server_type = "slave" ]; then
 	for ((i = 1; i < $begin; i++))
 	do
         	container="$prefix$i"
-        	docker exec -d $container /root/add_node_with_weave.sh $begin $end 0 
+		# for the nodes already existed on the cluster, just need to append the new node ip to the /etc/hosts and hadoop slave file, so the last two paraemeters are 
+		# meaningless for them, just use fake values
+        	docker exec -d $container /root/add_node_with_weave.sh $begin $end 0 0  
 	done
 
 	for ((i = $begin; i <= $end; i++))
@@ -44,11 +47,11 @@ if [ $server_type = "slave" ]; then
 			docker run -d --name $container -h $container --cpuset-cpus=$cpuset -m $memory_size \
 										    --device-read-bps /dev/mapper/ECEVM01--vg-root:$disk_speed_value \
 										    --device-write-bps /dev/mapper/ECEVM01--vg-root:$disk_speed_value \
-										    $image /root/add_node_with_weave.sh $begin $end $memory
+										    $image /root/add_node_with_weave.sh $begin $end $memory $cpu_core
 		else	
         		docker run -d --name $container -h $container --cpuset-cpus=$cpuset --cpu-period=$cpu_period --cpu-quota=$cpu_quota \
 -m $memory_size --device-read-bps /dev/mapper/ECEVM01--vg-root:$disk_speed_value \
-	--device-write-bps /dev/mapper/ECEVM01--vg-root:$disk_speed_value $image /root/add_node_with_weave.sh $begin $end $memory
+	--device-write-bps /dev/mapper/ECEVM01--vg-root:$disk_speed_value $image /root/add_node_with_weave.sh $begin $end $memory $cpu_core
 		fi
 		#add ip with weave
 		tm=$[i + 2]
@@ -58,6 +61,6 @@ if [ $server_type = "slave" ]; then
 	done
 
 elif [ $server_type = "master" ]; then
-	docker exec -d master /root/add_node_with_weave.sh $begin $end 0 
+	docker exec -d master /root/add_node_with_weave.sh $begin $end 0 0 # the last two parameters are meaningless for master, so we give it fake values 
 fi
 
