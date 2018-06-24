@@ -122,7 +122,7 @@ sub create_slaves {
 	$len = @one_cluster_conf;
 	for ($i = 0; $i < $len; $i++) {
 		my $container_index = $i + 1;
-		$output = `/home/lyuxiaosu/add_node_from_master.sh $image_name $container_index $container_index $one_cluster_conf[$i][1] $one_cluster_conf[$i][2] $one_cluster_conf[$i][3] $one_cluster_conf[$i][4] $one_cluster_conf[$i][5] $one_cluster_conf[$i][0]`;
+		$output = `/home/lyuxiaosu/add_node_from_master.sh $image_name $container_index $container_index $one_cluster_conf[$i][1] $one_cluster_conf[$i][2] $one_cluster_conf[$i][3] $one_cluster_conf[$i][4] $one_cluster_conf[$i][5] $one_cluster_conf[$i][0] $block_size`;
 #print("!!!!!!!create slave $container_index $one_cluster_conf[$i][0] $one_cluster_conf[$i][1] $one_cluster_conf[$i][2] $one_cluster_conf[$i][3] $one_cluster_conf[$i][4] $one_cluster_conf[$i][5]\n");
 		print("$output\n");
 	}
@@ -139,8 +139,10 @@ sub destroy_cluster {
 
 $image_name=$ARGV[0];
 
-open (f, "< hardware_configure2.txt") or die "Open hardware_configure2.txt fail, $!";
-#open (f, "< hardware_configure_test.txt") or die "Open hardware_configure3.txt fail, $!";
+$block_size=64;
+
+#open (f, "< hardware_configure2.txt") or die "Open hardware_configure2.txt fail, $!";
+open (f, "< hardware_configure_test.txt") or die "Open hardware_configure3.txt fail, $!";
 #open (f, "< hw_cf.txt") or die "Open hardware_configure3.txt fail, $!";
 
 readline f; #skip the frist line
@@ -181,7 +183,7 @@ while ($line=<f>) {
 		($minimum_memory, $minimum_cpu_core) = get_minimum_cpu_memory();
 		#create master
 		print("create and start master...\n");
-		$output = `/home/lyuxiaosu/start_master_with_weave.sh $image_name $minimum_memory $minimum_cpu_core`;
+		$output = `/home/lyuxiaosu/start_master_with_weave.sh $image_name $minimum_memory $minimum_cpu_core $block_size`;
 		`sleep 10`;
 		$container_index--;
 		#create slaves
@@ -222,6 +224,37 @@ while ($line=<f>) {
 		$container_index++;
 	}
 
+}
+
+if ($container_index > 1) {
+	#create the last cluster
+	#get the minimum cpu cores and memory from the cluster
+                ($minimum_memory, $minimum_cpu_core) = get_minimum_cpu_memory();
+                #create master
+                print("create and start master...\n");
+                $output = `/home/lyuxiaosu/start_master_with_weave.sh $image_name $minimum_memory $minimum_cpu_core $block_size`;
+                `sleep 10`;
+                $container_index--;
+                #create slaves
+                print("create and start slaves...\n");
+                create_slaves();
+                `sleep 30`;
+                #prepare data and folder on master
+                $output = `/home/lyuxiaosu/auto_deploy_diff_hardware/prepare_master.sh`;
+                #run applications
+                #the cluster has been finished, run applications one by one
+                $cluster_name="cluster".$cluster_index;
+                print("++++++ cluster:$cluster_name, the minimum memory:$minimum_memory, cpu_core:$minimum_cpu_core\n");
+                #$output = `/home/lyuxiaosu/auto_deploy_diff_hardware/run_applications.sh $cluster_name $container_index`;
+                print("all applications have been executed on $cluster_name, result=$output\n");
+                #after running, destroy the cluster and reset the resource
+                print("reset cluster resource...\n");
+                reset_resource();
+                @one_cluster_conf = ();
+                print("destroy $cluster_name ...\n");
+#destroy_cluster($container_index);
+                $container_index = 1;
+	
 }
 
 print("single node is:$single_nodes\n");

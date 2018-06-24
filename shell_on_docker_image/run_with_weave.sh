@@ -2,11 +2,11 @@
 
 print_help() {
   cat <<EOF
-  use $0 memory cpu_core begin_index end_index
+  use $0 memory cpu_core block_size begin_index end_index
 EOF
 }
 
-if [ $# != 4 ]; then
+if [ $# != 5 ]; then
 print_help
 exit
 fi
@@ -16,8 +16,9 @@ echo "192.168.0.2 master" > /etc/hosts
 
 memory=$1
 cpu_core=$2
-begin=$3 #the begin index of the slaves
-end=$4 # the end index of the slaves
+block_size=$3
+begin=$4 #the begin index of the slaves
+end=$5 # the end index of the slaves
 ip="192.168.0."
 suffix=" slave"
 prefix_host="slave"
@@ -47,7 +48,7 @@ do
 
 done
 
-/root/generate_default_conf.sh $memory $cpu_core
+/root/generate_default_conf.sh $memory $cpu_core $block_size
 
 #set default yarn-site and mapred-site 
 /etc/init.d/ssh start -D

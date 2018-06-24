@@ -2,11 +2,11 @@
 
 print_help() {
   cat <<EOF
-  use $0 add_node_begin_index add_node_end_index container_memory container_cpu_core
+  use $0 add_node_begin_index add_node_end_index container_memory container_cpu_core block_size
 EOF
 }
 
-if [ $# != 4 ]; then
+if [ $# != 5 ]; then
 print_help
 exit
 fi
@@ -15,6 +15,8 @@ begin=$1 #the begin index of the slaves
 end=$2 # the end index of the slaves
 memory=$3 # the memory size allocated for this container
 cpu_core=$4 # the cpu core allocated for this container
+block_size=$5 # hdfs block size
+
 ip="192.168.0."
 suffix=" slave"
 prefix_host="slave"
@@ -46,7 +48,7 @@ if [[ ("$last_letter" != "r" && $last_letter -ge $begin && $last_letter -le $end
 		echo $host_str >> /etc/hosts
 		host="$prefix_host$i"
 		echo $host >> /root/hadoop-2.7.6/etc/hadoop/slaves
-		/root/generate_xml.sh $memory $cpu_core
+		/root/generate_xml.sh $memory $cpu_core $block_size
 	done
 fi
 

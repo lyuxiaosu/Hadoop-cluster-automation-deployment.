@@ -2,11 +2,11 @@
 
 print_help() {
   cat <<EOF
-  use $0 docker_image add_node_begin_index add_node_end_index cpuset cpu_period cpu_quota memory disk_speed cpu_core
+  use $0 docker_image add_node_begin_index add_node_end_index cpuset cpu_period cpu_quota memory disk_speed cpu_core block_size
 EOF
 }
 
-if [ $# != 9 ]; then
+if [ $# != 10 ]; then
 print_help
 exit
 fi
@@ -22,7 +22,9 @@ memory=$7
 disk_speed=$8
 cpu_core=$9
 
+block_size=${10}
+
 /home/lyuxiaosu/add_node_with_weave.sh master $image $begin $end > add_node_with_weave.log
 
-ssh lyuxiaosu@161.253.78.191 "/home/lyuxiaosu/add_node_with_weave.sh slave $image $begin $end $cpuset $cpu_period $cpu_quota $memory $disk_speed $cpu_core"
+ssh lyuxiaosu@161.253.78.191 "/home/lyuxiaosu/add_node_with_weave.sh slave $image $begin $end $cpuset $cpu_period $cpu_quota $memory $disk_speed $cpu_core $block_size"
 

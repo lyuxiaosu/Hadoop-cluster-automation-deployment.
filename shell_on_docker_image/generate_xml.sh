@@ -3,17 +3,19 @@
 #this script is called by add_node_with_weave.sh
 print_help() {
   cat <<EOF
-  use $0 container_memory container_cpu_core
+  use $0 container_memory container_cpu_core block_size
 EOF
 }
 
-if [ $# != 2 ]; then
+if [ $# != 3 ]; then
 print_help
 exit
 fi
  
 memory=$1
 cpu_core=$2
+block_size=$3
+
 unit="m"
 
 physic_memory=$((1024*$memory))
@@ -26,6 +28,8 @@ NM_scheduler_minimum=$NM_scheduler_maximum
 NM_cpu_core=$cpu_core
 NM_cpu_core_maximum=$NM_cpu_core
 NM_cpu_core_minimum=$NM_cpu_core_maximum
+
+block_size=$(echo $block_size*1024*1024 | bc)
 
 #echo "NM_resource_memory:$NM_resource_memory NM_scheduler_maximum:$NM_scheduler_maximum NM_scheduler_minimum:$NM_scheduler_minimum: AM_map_memory:$AM_map_memory AM_reduce_memory:$AM_reduce_memory AM_resource_memory:$AM_resource_memory AM_map_heap:$AM_map_heap AM_reduce_heap:$AM_reduce_heap"
 cat > /root/hadoop-2.7.6/etc/hadoop/yarn-site.xml << EOF
@@ -153,3 +157,43 @@ cat > /root/hadoop-2.7.6/etc/hadoop/mapred-site.xml << EOF
         </property>
 </configuration>
 EOF
+
+cat > /root/hadoop-2.7.6/etc/hadoop/hdfs-site.xml << EOF
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+    <property>
+        <name>dfs.replication</name>
+        <value>2</value>
+        <description>Default block replication.
+        The actual number of replications can be specified when the file is created.
+        The default is used if replication is not specified in create time.
+        </description>
+    </property>
+
+    <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>file:/mnt/hadoop-2.7.6/namenode</value>
+        <final>true</final>
+    </property>
+
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>file:/mnt/hadoop-2.7.6/datanode</value>
+        <final>true</final>
+    </property>
+
+    <property>
+        <name>dfs.namenode.secondary.http-address</name>
+        <value>master:9001</value>
+    </property>
+
+    <property>
+        <name>dfs.blocksize</name>
+        <value>$block_size</value>
+    </property>
+
+</configuration>
+
+EOF
+

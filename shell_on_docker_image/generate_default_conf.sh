@@ -3,17 +3,19 @@
 #this script is called by run_with_weave.sh 
 print_help() {
   cat <<EOF
-  use $0 am_memory am_cpu_core
+  use $0 am_memory am_cpu_core block_size
 EOF
 }
 
-if [ $# != 2 ]; then
+if [ $# != 3 ]; then
 print_help
 exit
 fi
  
 memory=$1
 cpu_core=$2
+block_size=$3
+
 unit="m"
 
 AM_memory=$(echo $memory*1024*0.8 | bc)
@@ -29,6 +31,8 @@ map_heap=$(echo 0.8*$map_memory | bc)
 map_heap=${map_heap%.*}
 reduce_heap=$(echo 0.8*$reduce_memory | bc)
 reduce_heap=${reduce_heap%.*}
+
+block_size=$(echo $block_size*1024*1024 | bc)
 
 #echo "AM_memory:$AM_memory map_memory:$map_memory reduce_memory:$reduce_memory map_heap:$map_heap reduce_heap:$reduce_heap"
 cat > /root/hadoop-2.7.6/etc/hadoop/yarn-site.xml << EOF
@@ -163,3 +167,43 @@ cat > /root/hadoop-2.7.6/etc/hadoop/mapred-site.xml << EOF
 	
 </configuration>
 EOF
+
+cat > /root/hadoop-2.7.6/etc/hadoop/hdfs-site.xml << EOF
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+    <property>
+        <name>dfs.replication</name>
+        <value>2</value>
+        <description>Default block replication.
+        The actual number of replications can be specified when the file is created.
+        The default is used if replication is not specified in create time.
+        </description>
+    </property>
+
+    <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>file:/mnt/hadoop-2.7.6/namenode</value>
+        <final>true</final>
+    </property>
+
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>file:/mnt/hadoop-2.7.6/datanode</value>
+        <final>true</final>
+    </property>
+
+    <property>
+        <name>dfs.namenode.secondary.http-address</name>
+        <value>master:9001</value>
+    </property>
+
+    <property>
+        <name>dfs.blocksize</name>
+        <value>$block_size</value>
+    </property>
+
+</configuration>
+
+EOF
+
