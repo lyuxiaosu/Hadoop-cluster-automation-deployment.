@@ -62,7 +62,7 @@ echo $output
 
 #calculate pi
 echo "run pi..."
-output=`docker exec -i master bash -c "/root/hadoop-2.7.6/bin/hadoop jar /root/hadoop-2.7.6/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.6.jar pi 100 100"`
+output=`docker exec -i master bash -c "/root/hadoop-2.7.6/bin/hadoop jar /root/hadoop-2.7.6/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.6.jar pi 50 100"`
 echo "$output"
 echo "pi finish"
 application_name="pi"
@@ -73,7 +73,7 @@ echo $output
 
 #bbq
 echo "run bbq"
-output=`docker exec -i master bash -c "/root/hadoop-2.7.6/bin/hadoop jar /root/hadoop-2.7.6/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.6.jar bbp 2 8 100 bbq"`
+output=`docker exec -i master bash -c "/root/hadoop-2.7.6/bin/hadoop jar /root/hadoop-2.7.6/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.6.jar bbp 2 8 60 bbq"`
 echo "$output"
 echo "bbq finish"
 application_name="bbq"

@@ -31,7 +31,11 @@ block_size=${11}
 memory_unit="G"
 disk_speed_unit="mb"
 
+
 if [ $server_type = "slave" ]; then
+	#add 0.5G for each container
+	container_memory=$(echo $memory + 0.5| bc)
+	echo "container memory is $container_memory"
 	for ((i = 1; i < $begin; i++))
 	do
         	container="$prefix$i"
@@ -43,10 +47,10 @@ if [ $server_type = "slave" ]; then
 	for ((i = $begin; i <= $end; i++))
 	do
         	container="$prefix$i"
-		memory_size="$memory$memory_unit"
+		memory_size="$container_memory$memory_unit"
 		disk_speed_value="$disk_speed$disk_speed_unit"
 		if [ $cpu_period = -1 -o $cpu_quota = -1 ]; then
-			docker run -d --name $container -h $container --cpuset-cpus=$cpuset -m $memory_size \
+		docker run -d --name $container -h $container --cpuset-cpus=$cpuset -m $memory_size \
 										    --device-read-bps /dev/mapper/ECEVM01--vg-root:$disk_speed_value \
 										    --device-write-bps /dev/mapper/ECEVM01--vg-root:$disk_speed_value \
 										    $image /root/add_node_with_weave.sh $begin $end $memory $cpu_core $block_size
@@ -65,4 +69,3 @@ if [ $server_type = "slave" ]; then
 elif [ $server_type = "master" ]; then
 	docker exec -d master /root/add_node_with_weave.sh $begin $end 0 0 0 # the last three parameters are meaningless for master, so we give it fake values 
 fi
-

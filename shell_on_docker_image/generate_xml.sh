@@ -19,7 +19,7 @@ block_size=$3
 unit="m"
 
 physic_memory=$((1024*$memory))
-NM_resource_memory=$(echo 0.8*$physic_memory | bc)
+NM_resource_memory=$(echo 1 *$physic_memory | bc)
 #get int part
 NM_resource_memory=${NM_resource_memory%.*}
 NM_scheduler_maximum=$NM_resource_memory
@@ -81,29 +81,12 @@ cat > /root/hadoop-2.7.6/etc/hadoop/yarn-site.xml << EOF
                 <name>yarn.nodemanager.resource.memory-mb</name>
                 <value>$NM_resource_memory</value>
         </property>
-	<property>
-		<name>yarn.scheduler.maximum-allocation-mb</name>
-		<value>$NM_scheduler_maximum</value>
-	</property>
-	<property>
-                <name>yarn.scheduler.minimum-allocation-mb</name>
-                <value>$NM_scheduler_minimum</value>
-        </property>
+
 	<property>
                 <name>yarn.nodemanager.resource.cpu-vcores</name>
                 <value>$NM_cpu_core</value>
         </property>
 
-	<property>
-                <name>yarn.scheduler.minimum-allocation-vcores</name>
-                <value>$NM_cpu_core_minimum</value>
-        </property>
-
-	<property>
-                <name>yarn.scheduler.maximum-allocation-vcores</name>
-                <value>$NM_cpu_core_maximum</value>
-        </property>
-	 
 	<property>
                 <name>yarn.resourcemanager.scheduler.class</name>
                 <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler</value>
@@ -164,7 +147,7 @@ cat > /root/hadoop-2.7.6/etc/hadoop/hdfs-site.xml << EOF
 <configuration>
     <property>
         <name>dfs.replication</name>
-        <value>2</value>
+        <value>1</value>
         <description>Default block replication.
         The actual number of replications can be specified when the file is created.
         The default is used if replication is not specified in create time.

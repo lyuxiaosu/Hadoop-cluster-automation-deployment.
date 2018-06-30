@@ -18,7 +18,7 @@ block_size=$3
 
 unit="m"
 
-AM_memory=$(echo $memory*1024*0.8 | bc)
+AM_memory=$(echo $memory*1024*1 | bc)
 AM_memory=${AM_memory%.*}
 map_memory=$AM_memory
 reduce_memory=$map_memory
@@ -80,6 +80,27 @@ cat > /root/hadoop-2.7.6/etc/hadoop/yarn-site.xml << EOF
                 <name>yarn.resourcemanager.webapp.address</name>
                 <value>master:8088</value>
         </property>
+
+	<property>
+                <name>yarn.scheduler.maximum-allocation-mb</name>
+                <value>10240</value>
+        </property>
+
+        <property>
+                <name>yarn.scheduler.minimum-allocation-mb</name>
+                <value>1024</value>
+        </property>
+
+        <property>
+                <name>yarn.scheduler.minimum-allocation-vcores</name>
+                <value>1</value>
+        </property>
+
+        <property>
+                <name>yarn.scheduler.maximum-allocation-vcores</name>
+                <value>1</value>
+        </property>
+
         <property>
                 <name>yarn.resourcemanager.scheduler.class</name>
                 <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler</value>
@@ -174,7 +195,7 @@ cat > /root/hadoop-2.7.6/etc/hadoop/hdfs-site.xml << EOF
 <configuration>
     <property>
         <name>dfs.replication</name>
-        <value>2</value>
+        <value>1</value>
         <description>Default block replication.
         The actual number of replications can be specified when the file is created.
         The default is used if replication is not specified in create time.
