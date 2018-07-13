@@ -11,22 +11,23 @@ sub untar {
 }
 
 sub do_grap_data {
-	$path = $_[0];
-	$am_container = "_000001";
+	my $path = $_[0];
+	my $am_container = "_000001";
 	if ($path =~ $am_container) {
 		print ("this is am container, do not analyze it\n");
 		return ();
 	}
 
-	$file = $path."/syslog";
+	my $file = $path."/syslog";
 	print("log file is $file\n");
 	#get read bytes
-	$line = `grep "FILE: Number of bytes read" $file`;
-	@array = split("=", $line);
+	my $line = `grep "FILE: Number of bytes read" $file`;
+	my @array = split("=", $line);
 	if (!@array) {
 		return ();
 	}
-	$read_bytes = $array[1];
+
+	my $read_bytes = $array[1];
 
 	#get write bytes
 	$line = `grep "FILE: Number of bytes written" $file`;
@@ -35,8 +36,8 @@ sub do_grap_data {
 		return ();
 	}
 
-	$write_bytes = $array[1];
-	print("$write_bytes\n");
+	my $write_bytes = $array[1];
+	#print("$write_bytes\n");
 
 	#get map input records
 	$line = `grep "Map input records" $file`;
@@ -44,7 +45,7 @@ sub do_grap_data {
 	if (!@array) {
 		return ();
         }
-	$map_input_records = $array[1];
+	my $map_input_records = $array[1];
 
 	#get map output records 
 	$line = `grep "Map output records" $file`;
@@ -52,7 +53,7 @@ sub do_grap_data {
         if (!@array) {
                 return ();
         }
-        $map_output_records = $array[1];
+        my $map_output_records = $array[1];
 	
 	#get cpu time spent
 	$line = `grep "CPU time spent (ms)" $file`;
@@ -60,14 +61,58 @@ sub do_grap_data {
         if (!@array) {
                 return ();
         }
-	$cpu_time_spent = $array[1];
+	my $cpu_time_spent = $array[1];
+
+	#get map materialized bytes
+	$line = `grep "Map output materialized bytes" $file`;
+	@array = split("=", $line);
+	if (!@array) {
+		return ();
+	}
+
+	my $map_materialized_bytes = $array[1];
+
+	#get input split bytes
+	$line = `grep "Input split bytes" $file`;
+	@array = split("=", $line);
+	if (!@array) {
+		return ();
+	}
+
+	my $input_split_bytes = $array[1];
+
+	#get Combine input records
+	$line = `grep "Combine input records" $file`;
+	@array = split("=", $line);
+	if (!@array) {
+		return();
+	}
+
+	my $combine_input_records = $array[1];
+
+	# get combine output records
+	my $combine_output_records = $combine_input_records;
+	if ($combine_input_records != 0) {
+		$line = `grep "Combine output records" $file`;	
+		@array = split("=", $line);
+		$combine_output_records = $array[1];
+	} 
+
+	#get spilled records
+	$line = `grep "Spilled Records" $file`;
+	@array = split("=", $line);
+	if (!@array) {
+		return();
+	}
+	
+	my $spilled_records = $array[1];
 
 	print("read:$read_bytes, write:$write_bytes, input_records:$map_input_records, output_records:$map_output_records, cpu_time:$cpu_time_spent\n");
-	return ($read_bytes, $write_bytes, $map_input_records, $map_output_records, $cpu_time_spent);
+	return ($read_bytes, $write_bytes, $map_input_records, $map_output_records, $cpu_time_spent, $map_materialized_bytes, $input_split_bytes, $combine_input_records, $combine_output_records, $spilled_records);
 }
 
 sub grap_data {
-	my @data = (0, 0, 0, 0, 0, 0);
+	my @data = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	my $untar_folder_name = $_[0];
 	print ("untar folder name is $untar_folder_name\n");
 	my $application_folder = `ls $untar_folder_name`;
@@ -89,6 +134,11 @@ sub grap_data {
 			$data[2] = $data[2] + $array[2];
 			$data[3] = $data[3] + $array[3];
 			$data[4] = $data[4] + $array[4];
+			$data[5] = $data[5] + $array[5];
+			$data[6] = $data[6] + $array[6];
+			$data[7] = $data[7] + $array[7];
+			$data[8] = $data[8] + $array[8];
+			$data[9] = $data[9] + $array[9];
 		}
 
 	}
@@ -98,6 +148,11 @@ sub grap_data {
 		$data[2] = int($data[2]/$valid_container_count);
 		$data[3] = int($data[3]/$valid_container_count);
 		$data[4] = int($data[4]/$valid_container_count);
+		$data[5] = int($data[5]/$valid_container_count);
+		$data[6] = int($data[6]/$valid_container_count);
+		$data[7] = int($data[7]/$valid_container_count);
+		$data[8] = int($data[8]/$valid_container_count);
+		$data[9] = int($data[9]/$valid_container_count);
 		print("valid container count is $valid_container_count, cpu_time is $data[4]\n");
 		return @data;
 	} else {
@@ -107,7 +162,7 @@ sub grap_data {
 
 open (fr, "< applications.txt") or die "Open applications.txt fail, $!";
 open (fw, "> collected_log_data.txt") or die "Open collected_log_data.txt fail, $!";
-print fw "application cluster_slave read_bytes write_bytes input_records output_records cpu_time_spent\n";
+print fw "application cluster_slave read_bytes write_bytes input_records output_records bytes_read_from_hdfs map_materialized_bytes input_split_bytes combine_input_records combine_output_records spilled_records cpu_time_spent\n";
 
 $log_folder = "/home/lyuxiaosu/data_analysis/logs/";
 our %hash_data = ();
@@ -130,7 +185,7 @@ while ($line=<fr>) {
 		}
 		my @array = grap_data($untar_folder_name);
 		if (@array) {
-			print fw "$application $cluster $array[0] $array[1] $array[2] $array[3] $array[4]\n";
+			print fw "$application $cluster $array[0] $array[1] $array[2] $array[3] $array[5] $array[6] $array[7] $array[8] $array[9] $array[4]\n";
 		}
 		`rm -rf $untar_folder_name`;
 	}

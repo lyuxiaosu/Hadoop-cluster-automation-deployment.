@@ -50,7 +50,7 @@ sub split_file {
 	open (fw_train, "> train.txt") or die "train.txt fail, $!";
 	open (fw_test, "> test.txt") or die "test.txt fail, $!";
 	open (fw_predict, "> predict.txt") or die "predict.txt fail, $!";
-	for ($i = 0; $i < 209; $i++) {
+	for ($i = 0; $i < 214; $i++) {
 		$str = "col".($i+1);
 		print fw_train "$str ";
 		print fw_test "$str ";
