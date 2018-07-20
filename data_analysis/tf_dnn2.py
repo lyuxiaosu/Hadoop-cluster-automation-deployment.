@@ -27,11 +27,16 @@ def get_input_fn(data_set, num_epochs=None, shuffle=True):
       shuffle=shuffle)
 
 def get_scaled_df(df):
+	#get DataFrame from[0:213]
 	x = df.iloc[:, :213]
+	#scaled data
 	scaler = preprocessing.MinMaxScaler()
 	scaled_values = scaler.fit_transform(x)
+	#keep the same column name as before
 	x.loc[:,:] = scaled_values
+	#get the DataFrame [214]
 	y = df.iloc[:, 213:]
+	#combine two DataFrame to one
 	x_y = pd.concat([x,y], axis = 1)
 	return x_y
 
@@ -52,17 +57,15 @@ training_set = pd.read_csv("train.csv", skipinitialspace=True, skiprows=1, names
 test_set = pd.read_csv("test.csv", skipinitialspace=True, skiprows=1, names=COLUMNS) 
 predict_set = pd.read_csv("predict.csv", skipinitialspace=True, skiprows=1, names=COLUMNS) 
 
-print(type(predict_set))
-#------------test----------------
+#scaled dataset before traing, evaluate and predict
 training_set = get_scaled_df(training_set)
 test_set = get_scaled_df(test_set)
 predict_set = get_scaled_df(predict_set)
-#------------end test------------
+
 feature_cols = [tf.feature_column.numeric_column(k) for k in FEATURES]
 regressor = tf.estimator.DNNRegressor(feature_columns=feature_cols, hidden_units=[250, 200, 100, 50], dropout=0.1, 
-		optimizer=tf.train.ProximalAdagradOptimizer(learning_rate=0.02, l1_regularization_strength=0.001),model_dir="./boston_model")
+		optimizer=tf.train.ProximalAdagradOptimizer(learning_rate=0.02, l1_regularization_strength=0.001),model_dir="./task_execution_time_model")
 
-print("#######################\n")
 regressor.train(input_fn=get_input_fn(training_set), steps=8000)
 
 ev = regressor.evaluate(input_fn=get_input_fn(test_set, num_epochs=1, shuffle=False))
