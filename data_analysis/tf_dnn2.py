@@ -3,7 +3,8 @@ from __future__ import division
 from __future__ import print_function
 
 import itertools
-
+from sklearn import preprocessing
+import numpy as np
 import pandas as pd
 import tensorflow as tf
 from sklearn import datasets, metrics
@@ -25,6 +26,15 @@ def get_input_fn(data_set, num_epochs=None, shuffle=True):
       num_epochs=num_epochs,
       shuffle=shuffle)
 
+def get_scaled_df(df):
+	x = df.iloc[:, :213]
+	scaler = preprocessing.MinMaxScaler()
+	scaled_values = scaler.fit_transform(x)
+	x.loc[:,:] = scaled_values
+	y = df.iloc[:, 213:]
+	x_y = pd.concat([x,y], axis = 1)
+	return x_y
+
 def get_mae(y_pre, y_target):
 	absError = []
 	for i in range(len(y_pre)):
@@ -42,10 +52,17 @@ training_set = pd.read_csv("train.csv", skipinitialspace=True, skiprows=1, names
 test_set = pd.read_csv("test.csv", skipinitialspace=True, skiprows=1, names=COLUMNS) 
 predict_set = pd.read_csv("predict.csv", skipinitialspace=True, skiprows=1, names=COLUMNS) 
 
-
+print(type(predict_set))
+#------------test----------------
+training_set = get_scaled_df(training_set)
+test_set = get_scaled_df(test_set)
+predict_set = get_scaled_df(predict_set)
+#------------end test------------
 feature_cols = [tf.feature_column.numeric_column(k) for k in FEATURES]
-regressor = tf.estimator.DNNRegressor(feature_columns=feature_cols, hidden_units=[250, 200, 100, 50], model_dir="./boston_model")
+regressor = tf.estimator.DNNRegressor(feature_columns=feature_cols, hidden_units=[250, 200, 100, 50], dropout=0.1, 
+		optimizer=tf.train.ProximalAdagradOptimizer(learning_rate=0.02, l1_regularization_strength=0.001),model_dir="./boston_model")
 
+print("#######################\n")
 regressor.train(input_fn=get_input_fn(training_set), steps=8000)
 
 ev = regressor.evaluate(input_fn=get_input_fn(test_set, num_epochs=1, shuffle=False))
