@@ -10,6 +10,35 @@ sub untar {
 	$output = `tar -xzvf $tar_file -C $untar_folder_name`;
 }
 
+sub get_elapsed_time {
+	my $file = $_[0];
+	my $line = `grep "loaded properties from" $file`;
+	my @array = split("I", $line);
+	if (!@array) {
+                return();
+        }
+        $date_time = $array[0];
+        chomp($date_time);
+        print("---------$date_time\n");
+        my $begin_time = `date -d "$date_time" +%s.%N`;
+
+        #get end time
+        $line = `grep "shutdown complete" $file`;
+        @array = split("I", $line);
+        if (!@array) {
+                return();
+        }
+        $date_time = $array[0];
+        chomp($date_time);
+        print("------------end time: $date_time\n");
+        my $end_time = `date -d "$date_time" +%s.%N`;
+
+
+	my $time_elapsed = ($end_time - $begin_time)*1000;
+        print "begin_time:$begin_time, end_time:$end_time, elapsed_time:$time_elapsed\n";
+        return $time_elapsed;
+}
+
 sub do_grap_data {
 	my $path = $_[0];
 	my $am_container = "_000001";
@@ -55,14 +84,8 @@ sub do_grap_data {
         }
         my $map_output_records = $array[1];
 	
-	#get cpu time spent
-	$line = `grep "CPU time spent (ms)" $file`;
-	@array = split("=", $line);
-        if (!@array) {
-                return ();
-        }
-	my $cpu_time_spent = $array[1];
-
+	#get elapsed time 
+	my $elapsed_time = get_elapsed_time($file);
 	#get map materialized bytes
 	$line = `grep "Map output materialized bytes" $file`;
 	@array = split("=", $line);
@@ -107,8 +130,8 @@ sub do_grap_data {
 	
 	my $spilled_records = $array[1];
 
-	print("read:$read_bytes, write:$write_bytes, input_records:$map_input_records, output_records:$map_output_records, cpu_time:$cpu_time_spent\n");
-	return ($read_bytes, $write_bytes, $map_input_records, $map_output_records, $cpu_time_spent, $map_materialized_bytes, $input_split_bytes, $combine_input_records, $combine_output_records, $spilled_records);
+#	print("read:$read_bytes, write:$write_bytes, input_records:$map_input_records, output_records:$map_output_records, elapsed_time:$elapsed_time\n");
+	return ($read_bytes, $write_bytes, $map_input_records, $map_output_records, $elapsed_time, $map_materialized_bytes, $input_split_bytes, $combine_input_records, $combine_output_records, $spilled_records);
 }
 
 sub grap_data {
@@ -166,7 +189,7 @@ print fw "application cluster_slave read_bytes write_bytes input_records output_
 
 $log_folder = "/home/lyuxiaosu/data_analysis/logs/";
 our %hash_data = ();
-our $max_index = 120;
+our $max_index = 168;
 while ($line=<fr>) {
 	print ($line);
 	my $application = $line;
