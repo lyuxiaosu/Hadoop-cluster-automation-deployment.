@@ -75,6 +75,8 @@ sub destroy_cluster {
 $image_name=$ARGV[0];
 
 $block_size=64;
+$range_beg = 30;
+$range_end = 256;
 
 open (f, "< hardware_configure2.txt") or die "Open hardware_configure2.txt fail, $!";
 #open (f, "< hardware_configure_test.txt") or die "Open hardware_configure3.txt fail, $!";
@@ -96,6 +98,7 @@ while ($line=<f>) {
 	@cpu_period_quota = get_cpu_period_quota($cpu_share);
 	#create master
 	print("create cluster $cluster_name, start master...\n");
+	$block_size = `./generate_random.sh $range_beg $range_end`;
 	$output = `/home/lyuxiaosu/start_master_with_weave.sh $image_name $memory 1 $block_size`;
 	`sleep 15`;
 	#create slaves
@@ -103,7 +106,8 @@ while ($line=<f>) {
 	create_slaves($cluster_name, 3, $memory, $cpu_period_quota[0], $cpu_period_quota[1], $disk_speed);
 	#prepare data and folder on master
 	print("prepare master...\n");
-	$output = `/home/lyuxiaosu/auto_deploy_diff_hardware/prepare_master.sh`;
+	my $workload_size = $block_size * 6;
+	$output = `/home/lyuxiaosu/auto_deploy_diff_hardware/prepare_master.sh $workload_size`;
 	print "$output\n";
 	#run applications 
 	$output = `/home/lyuxiaosu/auto_deploy_diff_hardware/run_applications.sh $cluster_name 3`;

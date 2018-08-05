@@ -45,7 +45,7 @@ sub split_file {
 	open (fr, "< $file") or die "Open $file fail, $!";
 	$ret = `wc -l $file`;
 	@array = split(" ", $ret);
-	$train = int($array[0]*0.8);
+	$train = int($array[0]*0.9);
 	print ("$train\n");
 	open (fw_train, "> train.txt") or die "train.txt fail, $!";
 	open (fw_test, "> test.txt") or die "test.txt fail, $!";

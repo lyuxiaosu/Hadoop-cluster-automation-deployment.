@@ -130,12 +130,30 @@ sub do_grap_data {
 	
 	my $spilled_records = $array[1];
 
-#	print("read:$read_bytes, write:$write_bytes, input_records:$map_input_records, output_records:$map_output_records, elapsed_time:$elapsed_time\n");
-	return ($read_bytes, $write_bytes, $map_input_records, $map_output_records, $elapsed_time, $map_materialized_bytes, $input_split_bytes, $combine_input_records, $combine_output_records, $spilled_records);
+	#get Map output bytes
+	$line = `grep "Map output bytes" $file`;
+	@array = split("=", $line);
+	if (!@array) {
+		return();
+	}
+
+	my $map_output_bytes = $array[1];
+
+	#get HDFS read bytes
+	$line = `grep "HDFS: Number of bytes read" $file`;
+	@array = split("=", $line);
+	if (!@array) {
+		return();
+	}
+
+	my $hdfs_read_bytes = $array[1];
+
+	#print("read:$read_bytes, write:$write_bytes, input_records:$map_input_records, output_records:$map_output_records, elapsed_time:$elapsed_time\n");
+	return ($read_bytes, $write_bytes, $map_input_records, $map_output_records, $elapsed_time, $map_materialized_bytes, $input_split_bytes, $combine_input_records, $combine_output_records, $spilled_records, $map_output_bytes, $hdfs_read_bytes);
 }
 
 sub grap_data {
-	my @data = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	my @data = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	my $untar_folder_name = $_[0];
 	print ("untar folder name is $untar_folder_name\n");
 	my $application_folder = `ls $untar_folder_name`;
@@ -162,6 +180,8 @@ sub grap_data {
 			$data[7] = $data[7] + $array[7];
 			$data[8] = $data[8] + $array[8];
 			$data[9] = $data[9] + $array[9];
+			$data[10] = $data[10] + $array[10];
+			$data[11] = $data[11] + $array[11];
 		}
 
 	}
@@ -176,7 +196,9 @@ sub grap_data {
 		$data[7] = int($data[7]/$valid_container_count);
 		$data[8] = int($data[8]/$valid_container_count);
 		$data[9] = int($data[9]/$valid_container_count);
-		print("valid container count is $valid_container_count, cpu_time is $data[4]\n");
+		$data[10] = int($data[10]/$valid_container_count);
+		$data[11] = int($data[11]/$valid_container_count);
+		print("valid container count is $valid_container_count, cpu_time is $data[4], hdfs_read_bytes: $data[11]\n");
 		return @data;
 	} else {
 		return ();
@@ -185,11 +207,13 @@ sub grap_data {
 
 open (fr, "< applications.txt") or die "Open applications.txt fail, $!";
 open (fw, "> collected_log_data.txt") or die "Open collected_log_data.txt fail, $!";
+open (fw2, "> collected_log_data2.txt") or die "Open collected_log_data2.txt fail, $!";
 print fw "application cluster_slave read_bytes write_bytes input_records output_records bytes_read_from_hdfs map_materialized_bytes input_split_bytes combine_input_records combine_output_records spilled_records cpu_time_spent\n";
+print fw2 "application cluster_slave read_bytes write_bytes input_records output_records map_output_bytes hdfs_read_bytes bytes_read_from_hdfs map_materialized_bytes input_split_bytes combine_input_records combine_output_records spilled_records cpu_time_spent\n";
 
 $log_folder = "/home/lyuxiaosu/data_analysis/logs/";
 our %hash_data = ();
-our $max_index = 168;
+our $max_index = 280;
 while ($line=<fr>) {
 	print ($line);
 	my $application = $line;
@@ -209,6 +233,7 @@ while ($line=<fr>) {
 		my @array = grap_data($untar_folder_name);
 		if (@array) {
 			print fw "$application $cluster $array[0] $array[1] $array[2] $array[3] $array[5] $array[6] $array[7] $array[8] $array[9] $array[4]\n";
+			print fw2 "$application $cluster $array[0] $array[1] $array[2] $array[3] $array[10] $array[11] $array[5] $array[6] $array[7] $array[8] $array[9] $array[4]\n";
 		}
 		`rm -rf $untar_folder_name`;
 	}
@@ -216,3 +241,4 @@ while ($line=<fr>) {
 
 close fr;
 close fw;
+close fw2;
