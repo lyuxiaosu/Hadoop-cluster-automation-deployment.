@@ -208,8 +208,8 @@ sub grap_data {
 open (fr, "< applications.txt") or die "Open applications.txt fail, $!";
 open (fw, "> collected_log_data.txt") or die "Open collected_log_data.txt fail, $!";
 open (fw2, "> collected_log_data2.txt") or die "Open collected_log_data2.txt fail, $!";
-print fw "application cluster_slave read_bytes write_bytes input_records output_records bytes_read_from_hdfs map_materialized_bytes input_split_bytes combine_input_records combine_output_records spilled_records cpu_time_spent\n";
-print fw2 "application cluster_slave read_bytes write_bytes input_records output_records map_output_bytes hdfs_read_bytes bytes_read_from_hdfs map_materialized_bytes input_split_bytes combine_input_records combine_output_records spilled_records cpu_time_spent\n";
+print fw "application cluster_slave read_bytes write_bytes input_records output_records map_materialized_bytes input_split_bytes combine_input_records combine_output_records spilled_records cpu_time_spent\n";
+print fw2 "application cluster_slave read_bytes write_bytes input_records output_records map_output_bytes hdfs_read_bytes map_materialized_bytes input_split_bytes combine_input_records combine_output_records spilled_records cpu_time_spent\n";
 
 $log_folder = "/home/lyuxiaosu/data_analysis/logs/";
 our %hash_data = ();
