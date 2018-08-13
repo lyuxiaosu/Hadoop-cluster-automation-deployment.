@@ -48,6 +48,7 @@ done
 output=`clean_logs $slave_count`
 echo "$output"
 
+:'
 #bbq
 echo "run bbp..."
 nDigitsArray=(4 8 12 16 20 24 28)
@@ -64,6 +65,7 @@ output=`copy_logs $cluster_name $slave_count $application_name`
 echo $output
 output=`clean_logs $slave_count`
 echo $output
+'
 
 #wordcount
 echo "run wordcount..."
@@ -78,6 +80,7 @@ echo $output
 output=`clean_logs $slave_count`
 echo $output
 
+:'
 #calculate pi
 echo "run pi..."
 mapcount=`./generate_random.sh 30 50`
@@ -90,6 +93,7 @@ output=`copy_logs $cluster_name $slave_count $application_name`
 echo $output
 output=`clean_logs $slave_count`
 echo $output
+'
 
 #wordmean
 echo "run wordmean" 

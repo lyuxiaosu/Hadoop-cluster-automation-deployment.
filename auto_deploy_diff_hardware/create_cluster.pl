@@ -76,7 +76,7 @@ $image_name=$ARGV[0];
 
 $block_size=64;
 $range_beg = 30;
-$range_end = 256;
+$range_end = 512;
 
 open (f, "< hardware_configure2.txt") or die "Open hardware_configure2.txt fail, $!";
 #open (f, "< hardware_configure_test.txt") or die "Open hardware_configure3.txt fail, $!";
@@ -85,7 +85,6 @@ print fw "cluster_name\n";
 
 readline f; #skip the frist line
 
-$index = 2;
 #stop cluster first
 destroy_cluster(10);
 
@@ -106,17 +105,17 @@ while ($line=<f>) {
 	create_slaves($cluster_name, 3, $memory, $cpu_period_quota[0], $cpu_period_quota[1], $disk_speed);
 	#prepare data and folder on master
 	print("prepare master...\n");
-	my $workload_size = $block_size * 6;
-	$output = `/home/lyuxiaosu/auto_deploy_diff_hardware/prepare_master.sh $workload_size`;
+	my $workload_size = $block_size * 2;
+	$output = `/home/lyuxiaosu/auto_deploy_diff_hardware/prepare_master.sh $workload_size $cluster_name`;
 	print "$output\n";
-	#run applications 
+	#run applications
+	print("start run applications...\n");
 	$output = `/home/lyuxiaosu/auto_deploy_diff_hardware/run_applications.sh $cluster_name 3`;
 	print("all applications have been executed on $cluster_name, result=$output\n");
 	#after running, destroy the cluster and reset the resource
 	print("reset cluster resource...\n");
 	print("destroy $cluster_name ...\n");
 	destroy_cluster(3);
-	$index++;
 	print fw "$cluster_name\n";
 }
 

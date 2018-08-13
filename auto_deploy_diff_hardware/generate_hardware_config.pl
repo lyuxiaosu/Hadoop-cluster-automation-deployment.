@@ -2,7 +2,6 @@
 
 @cpu_share = (1/5, 2/5, 3/5, 4/5, 1);
 @memory = (1, 2, 4, 6, 8, 7, 9);
-#@disk_read_speed = (10, 20, 40, 60, 80, 100); 
 @disk_read_speed = (10, 20, 40, 50, 70, 80, 90, 100);
 
 open(f, "> hardware_configure.txt") or die "Open hardware_configure.txt fail, $!";
